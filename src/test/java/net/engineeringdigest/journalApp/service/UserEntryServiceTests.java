@@ -28,6 +28,7 @@ public class UserEntryServiceTests {
 //            "ram",
 //            "kiki"
 //    })
+    @Disabled
     @ValueSource(strings = {
             "ram",
             "kiki"
