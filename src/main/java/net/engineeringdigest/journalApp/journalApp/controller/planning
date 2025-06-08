@@ -1,0 +1,19 @@
+journals endpoints
+
+getAll journals
+getById journal
+deletebyId journals
+update journals
+
+getAllUsers
+getByUserName
+deletebyUserName
+UpdateUser
+
+ getAll journals - normal
+ getById - normal
+ deleteById - delete from the journals by userName
+
+ update - by userName should update the journals entry and in the user as well
+
+add transaction and use mongodb uri for connection
