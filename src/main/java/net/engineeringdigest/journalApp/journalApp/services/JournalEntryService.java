@@ -71,7 +71,7 @@ public class JournalEntryService {
             // Remove journal from user's list
             user.getJournals().removeIf(journal -> journal.getId().equals(journalToDelete.getId()));
             userService.saveUser(user);
-
+            logger.info("logging in delete entry");
             // Delete from journal collection
             journalEntry.deleteById(id);
             return true;
