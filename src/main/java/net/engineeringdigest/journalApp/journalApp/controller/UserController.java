@@ -3,6 +3,7 @@ package net.engineeringdigest.journalApp.journalApp.controller;
 import net.engineeringdigest.journalApp.journalApp.api.response.WeatherResponse;
 import net.engineeringdigest.journalApp.journalApp.entity.User;
 import net.engineeringdigest.journalApp.journalApp.repository.UserEntryRepository;
+import net.engineeringdigest.journalApp.journalApp.services.BenchmarkService;
 import net.engineeringdigest.journalApp.journalApp.services.UserEntryService;
 import net.engineeringdigest.journalApp.journalApp.services.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -24,6 +27,9 @@ public class UserController {
 
     @Autowired
     private WeatherService weatherService;
+
+    @Autowired
+    private BenchmarkService benchmarkService;
 
 
     @GetMapping("/{userName}")
@@ -66,11 +72,19 @@ public class UserController {
     @GetMapping("/weather")
     public ResponseEntity<?> greeting() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        WeatherResponse weatherResponse = weatherService.getWeather("Mumbai");
+        WeatherResponse weather = weatherService.getWeather("delhi");
+        String weatherDescription = weather.getCurrent().getCondition().getText();
+        double feelsLike = weather.getCurrent().getFeelslike();
+
         String greeting = "";
-        if (weatherResponse != null) {
-            greeting = ", Weather feels like " + weatherResponse.getCurrent().getFeelslike();
+        if (weather != null) {
+            greeting = ", Weather feels like " + feelsLike;
         }
-        return new ResponseEntity<>("Hi " + authentication.getName() + greeting, HttpStatus.OK);
+        return new ResponseEntity<>("Hi " + authentication.getName() + greeting + " "+weatherDescription, HttpStatus.OK);
+    }
+
+    @GetMapping("/redisTimeDiff")
+    public Map<String, Object> getTimeDiff(){
+        return benchmarkService.benchmark();
     }
 }

@@ -1,8 +1,7 @@
 package net.engineeringdigest.journalApp.journalApp.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -14,6 +13,9 @@ import java.util.List;
 
 @Document(collection = "user")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -28,6 +30,9 @@ public class User {
 
     @NonNull
     private String password;
+
+    private String email;
+    private boolean sentimentAnalysis;
 
     @DBRef
     private List<Journals> journals = new ArrayList<>();

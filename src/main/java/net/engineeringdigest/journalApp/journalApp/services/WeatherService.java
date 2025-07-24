@@ -1,61 +1,52 @@
-package net.engineeringdigest.journalApp.journalApp.services;//package net.engineeringdigest.journalApp.journalApp.services;
-//
-//import net.engineeringdigest.journalApp.journalApp.api.response.WeatherResponse;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.HttpMethod;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.client.RestTemplate;
-//
-//@Service
-//public class WeatherService {
-//
-//    @Autowired
-//    private RestTemplate restTemplate;
-//
-//    private static final finalAPI = "https://api.weatherapi.com/v1/current.json"
-//
-//
-//    public WeatherResponse getWeather(String city) {
-//            ResponseEntity<WeatherResponse> response = restTemplate.exchange(finalAPI, HttpMethod.POST, null, WeatherResponse.class);
-//            WeatherResponse body = response.getBody();
-//            return body;
-//        }
-//
-//    }
-//}
+package net.engineeringdigest.journalApp.journalApp.services;
 
+import lombok.extern.slf4j.Slf4j;
 import net.engineeringdigest.journalApp.journalApp.api.response.WeatherResponse;
+import net.engineeringdigest.journalApp.journalApp.cache.AppCache;
+import net.engineeringdigest.journalApp.journalApp.constants.Placeholders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@Slf4j
 public class WeatherService {
+    @Value("${weather.api.key}")
+    private String apiKey;
 
     @Autowired
     private RestTemplate restTemplate;
 
-    private static final String FINAL_API = "https://api.weatherapi.com/v1/current.json";
+    @Autowired
+    private AppCache appCache;
+
+    @Autowired
+    private RedisService redisService;
 
     public WeatherResponse getWeather(String city) {
-        // Build URL with query parameters (Weather API typically expects GET, not POST)
-        String url = FINAL_API + "?key=e218aac9b46f4ec988a140923250806&q=" + city;
+        long startNano = System.nanoTime();
+        WeatherResponse weatherResponse = redisService.get("weather_of_" + city, WeatherResponse.class);
+        long endNano = System.nanoTime();
+        long durationInMillis = (endNano - startNano) / 1_000_000;
+        log.info("Weather API call took {} ms", durationInMillis);
+        if (weatherResponse != null) {
+            return weatherResponse;
+        } else {
+            long startNano1 = System.nanoTime();
+            String finalAPI = appCache.appCache.get(AppCache.keys.WEATHER_API.toString()).replace(Placeholders.CITY, city).replace(Placeholders.API_KEY, apiKey);
+            ResponseEntity<WeatherResponse> response = restTemplate.exchange(finalAPI, HttpMethod.GET, null, WeatherResponse.class);
+            WeatherResponse body = response.getBody();
+            long endNano1 = System.nanoTime();
+            long durationInMillis1 = (endNano1 - startNano1) / 1_000_000;
 
-        // For POST request (unusual for weather APIs — but showing it anyway)
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            log.info("Weather API call took {} ms", durationInMillis1);
+            if (body != null) {
+                redisService.set("weather_of_" + city, body, 300l);
+            }
+            return body;
+        }
 
-        HttpEntity<String> request = new HttpEntity<>(null, headers);
-
-        ResponseEntity<WeatherResponse> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST, // typically this would be HttpMethod.GET
-                request,
-                WeatherResponse.class
-        );
-
-        return response.getBody();
     }
 }

@@ -26,8 +26,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/public/**").permitAll()
                 .antMatchers("/journalApp/journal/**", "/journalApp/user/**").authenticated()
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().permitAll();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
+                .anyRequest().permitAll()
+                .and()
+                .httpBasic()
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .csrf().disable();
     }
 
     @Override

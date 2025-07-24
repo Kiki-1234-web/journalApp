@@ -2,6 +2,7 @@ package net.engineeringdigest.journalApp.journalApp.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.engineeringdigest.journalApp.journalApp.enums.Sentiment;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,5 +18,7 @@ public class Journals {
     private String content;
 
     private String title;
+
+    private Sentiment sentiment;
 
 }
